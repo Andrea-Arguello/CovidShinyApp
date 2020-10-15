@@ -41,7 +41,7 @@ function(input, output, session) {
   
   data = reactive({
     d = allData %>%
-      filter(`Country/Region` == input$country)
+      filter(`Country/Region` == input$country, as.Date(date) >= as.Date(input$daterange[1]) & as.Date(date) <= as.Date(input$daterange[2]))
     
     d = d %>% 
     group_by(date) %>% 
