@@ -4,6 +4,7 @@
 library(dplyr)
 library(tidyr)
 library(leaflet)
+library(leaflet.extras)
 
 baseURL = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series"
 
@@ -30,6 +31,16 @@ loadData = function(fileName, columnName) {
   return(data)
 }
 
+loadDataMap = function(fileName) {
+  if(!file.exists(fileName) || minutesSinceLastUpdate(fileName) > 10) {
+    data = read.csv(file.path(baseURL, fileName), check.names=FALSE, stringsAsFactors=FALSE)
+    save(data, file=fileName)  
+  } else {
+    load(file=fileName)
+  }
+  return(data)
+}
+
 allData = 
   loadData(
     "time_series_covid19_confirmed_global.csv", "CumConfirmed") %>%
@@ -37,6 +48,8 @@ allData =
     "time_series_covid19_deaths_global.csv", "CumDeaths")) %>%
   inner_join(loadData(
     "time_series_covid19_recovered_global.csv","CumRecovered"))
+
+my_mapData = loadDataMap("time_series_covid19_confirmed_global.csv")
 
 function(input, output, session) {
   
@@ -59,20 +72,8 @@ function(input, output, session) {
   })
   
   mapData = reactive({
-    d = allData %>%
-      filter(as.Date(date) >= as.Date(input$daterange[1]) & as.Date(date) <= as.Date(input$daterange[2]))
+    da = my_mapData
     
-    d = d %>% 
-      group_by(date) %>% 
-      summarise_if(is.numeric, sum, na.rm=TRUE)
-    
-    d %>%
-      mutate(
-        dateStr = format(date, format="%b %d, %Y"),    # Jan 20, 2020
-        NewConfirmed=CumConfirmed - lag(CumConfirmed, default=0),
-        NewRecovered=CumRecovered - lag(CumRecovered, default=0),
-        NewDeaths=CumDeaths - lag(CumDeaths, default=0)
-      )
   })
   
   observeEvent(input$country, {
@@ -93,7 +94,7 @@ function(input, output, session) {
       leaflet(mydata) %>% 
         setView(lng = -99, lat = 45, zoom = 2)  %>% #setting the view over ~ center of North America
         addTiles() %>% 
-        addCircles(data = mydata, lat = ~ Lat, lng = ~ Long, weight = 1, radius = 100, color = 'orange', fillOpacity = 0.5)
+        addCircles(data = mydata, lat = ~ Lat, lng = ~ Long, weight = 1, radius = 100000, color = 'orange', fillOpacity = 0.5)
     })
   }
   

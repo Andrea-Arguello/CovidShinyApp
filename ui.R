@@ -37,7 +37,7 @@ shinyUI(fluidPage(
     plotlyOutput("dailyMetrics")
   ),
   fluidRow(
-    plotlyOutput("my_map")
+    leafletOutput(outputId = "my_map")
   )
 ))
 
