@@ -2,7 +2,8 @@
 # Johns Hopkins University Center for System Science and Engineering (JHU CCSE)
 
 library(dplyr)
-library(tidyr)  
+library(tidyr)
+library(leaflet)
 
 baseURL = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series"
 
@@ -57,6 +58,23 @@ function(input, output, session) {
       )
   })
   
+  mapData = reactive({
+    d = allData %>%
+      filter(as.Date(date) >= as.Date(input$daterange[1]) & as.Date(date) <= as.Date(input$daterange[2]))
+    
+    d = d %>% 
+      group_by(date) %>% 
+      summarise_if(is.numeric, sum, na.rm=TRUE)
+    
+    d %>%
+      mutate(
+        dateStr = format(date, format="%b %d, %Y"),    # Jan 20, 2020
+        NewConfirmed=CumConfirmed - lag(CumConfirmed, default=0),
+        NewRecovered=CumRecovered - lag(CumRecovered, default=0),
+        NewDeaths=CumDeaths - lag(CumDeaths, default=0)
+      )
+  })
+  
   observeEvent(input$country, {
     states = allData %>%
       filter(`Country/Region` == input$country) %>% 
@@ -68,6 +86,16 @@ function(input, output, session) {
   countries = sort(unique(allData$`Country/Region`))
   
   updateSelectInput(session, "country", choices=countries, selected="China")
+  
+  renderMap = function() {
+    renderLeaflet({
+      mydata = mapData()
+      leaflet(mydata) %>% 
+        setView(lng = -99, lat = 45, zoom = 2)  %>% #setting the view over ~ center of North America
+        addTiles() %>% 
+        addCircles(data = mydata, lat = ~ Lat, lng = ~ Long, weight = 1, radius = 100, color = 'orange', fillOpacity = 0.5)
+    })
+  }
   
   renderBarPlot = function(varPrefix, legendPrefix, yaxisTitle) {
     renderPlotly({
@@ -102,6 +130,7 @@ function(input, output, session) {
   
   output$dailyMetrics = renderBarPlot("New", legendPrefix="New", yaxisTitle="New Cases per Day")
   output$cumulatedMetrics = renderBarPlot("Cum", legendPrefix="Cumulated", yaxisTitle="Cumulated Cases")
+  output$my_map = renderMap()
 }
 
 
