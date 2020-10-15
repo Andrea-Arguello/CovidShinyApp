@@ -37,6 +37,9 @@ shinyUI(fluidPage(
     plotlyOutput("dailyMetrics")
   )
   ,
+  sliderInput("range", "Cantidad de casos activos:",
+              min = 0, max = 4600000,
+              value = 0.5, step = 0.1),
   fluidRow(
     leafletOutput(outputId = "my_map")
   )
