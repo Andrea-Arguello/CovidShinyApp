@@ -17,10 +17,7 @@ shinyUI(fluidPage(
       4, 
       selectizeInput("country", label=h5("Country"), choices=NULL, width="100%")
     ),
-    column(
-      4, 
-      selectizeInput("state", label=h5("State / Province"), choices=NULL, width="100%")
-    ),
+   
     column(
       4, 
       checkboxGroupInput(
@@ -31,9 +28,6 @@ shinyUI(fluidPage(
   ),
   fluidRow(
     plotlyOutput("dailyMetrics")
-  ),
-  fluidRow(
-    plotlyOutput("cumulatedMetrics")
   )
 ))
 

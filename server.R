@@ -42,14 +42,11 @@ function(input, output, session) {
   data = reactive({
     d = allData %>%
       filter(`Country/Region` == input$country)
-    if(input$state != "<all>") {
-      d = d %>% 
-        filter(`Province/State` == input$state) 
-    } else {
-      d = d %>% 
-        group_by(date) %>% 
-        summarise_if(is.numeric, sum, na.rm=TRUE)
-    }
+    
+    d = d %>% 
+    group_by(date) %>% 
+    summarise_if(is.numeric, sum, na.rm=TRUE)
+    
     
     d %>%
       mutate(
