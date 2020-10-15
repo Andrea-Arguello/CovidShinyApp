@@ -87,7 +87,7 @@ function(input, output, session) {
     renderLeaflet({
       mydata = mapData()
       leaflet(mydata) %>% 
-        setView(lng = -99, lat = 45, zoom = 2)  %>% #setting the view over ~ center of North America
+        setView(lng = 0, lat = 45, zoom = 2)  %>% #setting the view over ~ center of North America
         addTiles() %>% 
         addCircles(data = mydata, lat = ~ Lat, lng = ~ Long, weight = 1, radius = ~sqrt(Activos)*90, color = 'orange', fillOpacity = 0.5)
     })
