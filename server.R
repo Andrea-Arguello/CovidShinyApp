@@ -8,7 +8,7 @@ library(leaflet.extras)
 
 baseURL = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series"
 
-f1 = list(family="Courier New, monospace", size=12, color="rgb(30,30,30)")
+f1 = list(family="Century Gothic, monospace", size=12, color="rgb(30,30,30)")
 
 minutesSinceLastUpdate = function(fileName) {
   (as.numeric(as.POSIXlt(Sys.time())) - as.numeric(file.info(fileName)$ctime)) / 60
