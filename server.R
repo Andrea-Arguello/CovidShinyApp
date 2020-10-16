@@ -56,19 +56,21 @@ function(input, output, session) {
         NewDeaths=CumDeaths - lag(CumDeaths, default=0)
       )
   })
-  
   mapData = reactive({
     d = allData %>% 
       group_by(`Country/Region`, Lat, Long) %>% 
       summarise_if(is.numeric, sum, na.rm=TRUE)
     
-    d %>%
+    d = d %>%
       mutate(
         NewConfirmed=CumConfirmed - lag(CumConfirmed, default=0),
         NewRecovered=CumRecovered - lag(CumRecovered, default=0),
         NewDeaths=CumDeaths - lag(CumDeaths, default=0),
         Activos = NewConfirmed - NewRecovered - NewDeaths
       )
+    d %>%
+      filter(as.numeric(Activos) >= as.numeric(input$cases_range))
+    
   })
   
   observeEvent(input$country, {
