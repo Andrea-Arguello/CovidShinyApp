@@ -7,6 +7,10 @@ library(leaflet)
 library(leaflet.extras)
 library(shinydashboard)
 
+library(shiny)
+library(plotly)
+library(shinythemes)
+
 
 baseURL = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series"
 
@@ -32,6 +36,15 @@ loadData = function(fileName, columnName) {
   return(data)
 }
 
+loadDataMap = function(fileName) {
+  if(!file.exists(fileName) || minutesSinceLastUpdate(fileName) > 10) {
+    data = read.csv(file.path(baseURL, fileName), check.names=FALSE, stringsAsFactors=FALSE)
+    save(data, file=fileName)  
+  } else {
+    load(file=fileName)
+  }
+  return(data)
+}
 
 allData = 
   loadData(
