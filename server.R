@@ -5,6 +5,8 @@ library(dplyr)
 library(tidyr)
 library(leaflet)
 library(leaflet.extras)
+library(shinydashboard)
+
 
 baseURL = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series"
 
@@ -39,6 +41,12 @@ allData =
   inner_join(loadData(
     "time_series_covid19_recovered_global.csv","CumRecovered"))
 
+confirmed = loadDataMap("time_series_covid19_confirmed_global.csv")
+deaths = loadDataMap("time_series_covid19_deaths_global.csv")
+recovered = loadDataMap("time_series_covid19_recovered_global.csv")
+
+my_mapData = loadDataMap("time_series_covid19_confirmed_global.csv")
+
 function(input, output, session) {
   
   data = reactive({
@@ -56,6 +64,7 @@ function(input, output, session) {
         NewDeaths=CumDeaths - lag(CumDeaths, default=0)
       )
   })
+  
   mapData = reactive({
     d = allData %>% 
       group_by(`Country/Region`, Lat, Long) %>% 
@@ -70,7 +79,6 @@ function(input, output, session) {
       )
     d %>%
       filter(as.numeric(Activos) >= as.numeric(input$cases_range))
-    
   })
   
   observeEvent(input$country, {
@@ -126,7 +134,44 @@ function(input, output, session) {
     })
   }
   
+
+  
+  confirmed = select(confirmed, -Lat, -Long)
+  sumsc = data.frame(colSums(Filter(is.numeric, confirmed)))
+  tConfirmed = colSums(sumsc)
+  
+  deaths = select(deaths, -Lat, -Long)
+  sumsd = data.frame(colSums(Filter(is.numeric, deaths)))
+  tDeaths = colSums(sumsd)
+  
+  recovered = select(recovered, -Lat, -Long)
+  sumsr = data.frame(colSums(Filter(is.numeric, recovered)))
+  tRecovered = colSums(sumsr)
+  
   output$dailyMetrics = renderBarPlot("New", legendPrefix="New", yaxisTitle="New Cases per Day")
+  output$value1 = renderValueBox({
+    valueBox(
+      tConfirmed
+      ,paste('Confirmados Globalmente'))
+    
+    
+  })
+  output$value2 = renderValueBox({
+    valueBox(
+      formatC(tDeaths, format="d", big.mark=',')
+      ,paste('Muertes Globalmente'))
+    
+    
+  })
+
+  output$value3 = renderValueBox({
+    valueBox(
+      formatC(tRecovered, format="d", big.mark=',')
+      ,paste('Recuperados Globalmente')
+      )
+    
+  })
+  
   output$cumulatedMetrics = renderBarPlot("Cum", legendPrefix="Cumulated", yaxisTitle="Cumulated Cases")
   output$my_map = renderMap()
 }
