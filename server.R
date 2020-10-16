@@ -58,8 +58,6 @@ confirmed = loadDataMap("time_series_covid19_confirmed_global.csv")
 deaths = loadDataMap("time_series_covid19_deaths_global.csv")
 recovered = loadDataMap("time_series_covid19_recovered_global.csv")
 
-my_mapData = loadDataMap("time_series_covid19_confirmed_global.csv")
-
 function(input, output, session) {
   
   data = reactive({

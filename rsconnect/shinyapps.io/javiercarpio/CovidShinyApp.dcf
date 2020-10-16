@@ -5,9 +5,9 @@ account: javiercarpio
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 3027398
-bundleId: 3747125
+bundleId: 3747453
 url: https://javiercarpio.shinyapps.io/CovidShinyApp/
-when: 1602808774.16742
+when: 1602817864.87914
 asMultiple: FALSE
 asStatic: FALSE
 ignoredFiles: README.md
