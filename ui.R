@@ -1,4 +1,5 @@
 library(shiny)
+library(shinydashboard)
 library(plotly)
 
 shinyUI(fluidPage(
@@ -35,6 +36,11 @@ shinyUI(fluidPage(
   ),
   fluidRow(
     plotlyOutput("dailyMetrics")
+  ),
+  fluidRow(
+    valueBoxOutput("value1"),
+    valueBoxOutput("value2"),
+    valueBoxOutput("value3")
   ),
   fluidRow(
     leafletOutput(outputId = "my_map")
