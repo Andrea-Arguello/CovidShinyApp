@@ -10,7 +10,7 @@ library(shinydashboard)
 
 baseURL = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series"
 
-f1 = list(family="Courier New, monospace", size=12, color="rgb(30,30,30)")
+f1 = list(family="Century Gothic, monospace", size=12, color="rgb(30,30,30)")
 
 minutesSinceLastUpdate = function(fileName) {
   (as.numeric(as.POSIXlt(Sys.time())) - as.numeric(file.info(fileName)$ctime)) / 60
@@ -19,8 +19,7 @@ minutesSinceLastUpdate = function(fileName) {
 loadData = function(fileName, columnName) {
   if(!file.exists(fileName) || minutesSinceLastUpdate(fileName) > 10) {
     data = read.csv(file.path(baseURL, fileName), check.names=FALSE, stringsAsFactors=FALSE) %>%
-      select(-Lat, -Long) %>% 
-      pivot_longer(-(1:2), names_to="date", values_to=columnName) %>% 
+      pivot_longer(-(1:4), names_to="date", values_to=columnName) %>% 
       mutate(
         date=as.Date(date, format="%m/%d/%y"),
         `Country/Region`=if_else(`Country/Region` == "", "?", `Country/Region`),
@@ -33,15 +32,6 @@ loadData = function(fileName, columnName) {
   return(data)
 }
 
-loadDataMap = function(fileName) {
-  if(!file.exists(fileName) || minutesSinceLastUpdate(fileName) > 10) {
-    data = read.csv(file.path(baseURL, fileName), check.names=FALSE, stringsAsFactors=FALSE)
-    save(data, file=fileName)  
-  } else {
-    load(file=fileName)
-  }
-  return(data)
-}
 
 allData = 
   loadData(
@@ -66,7 +56,6 @@ function(input, output, session) {
     group_by(date) %>% 
     summarise_if(is.numeric, sum, na.rm=TRUE)
     
-    
     d %>%
       mutate(
         dateStr = format(date, format="%b %d, %Y"),    # Jan 20, 2020
@@ -77,8 +66,17 @@ function(input, output, session) {
   })
   
   mapData = reactive({
-    da = my_mapData
+    d = allData %>% 
+      group_by(`Country/Region`, Lat, Long) %>% 
+      summarise_if(is.numeric, sum, na.rm=TRUE)
     
+    d %>%
+      mutate(
+        NewConfirmed=CumConfirmed - lag(CumConfirmed, default=0),
+        NewRecovered=CumRecovered - lag(CumRecovered, default=0),
+        NewDeaths=CumDeaths - lag(CumDeaths, default=0),
+        Activos = NewConfirmed - NewRecovered - NewDeaths
+      )
   })
   
   observeEvent(input$country, {
@@ -97,9 +95,9 @@ function(input, output, session) {
     renderLeaflet({
       mydata = mapData()
       leaflet(mydata) %>% 
-        setView(lng = -99, lat = 45, zoom = 2)  %>% #setting the view over ~ center of North America
+        setView(lng = 0, lat = 45, zoom = 2)  %>% #setting the view over ~ center of North America
         addTiles() %>% 
-        addCircles(data = mydata, lat = ~ Lat, lng = ~ Long, weight = 1, radius = 100000, color = 'orange', fillOpacity = 0.5)
+        addCircles(data = mydata, lat = ~ Lat, lng = ~ Long, weight = 1, radius = ~sqrt(Activos)*90, color = 'orange', fillOpacity = 0.5)
     })
   }
   
