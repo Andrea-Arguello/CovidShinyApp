@@ -54,7 +54,7 @@ shinyUI(fluidPage(
     tabPanel("COVID map",
              dashboardBody(
                sliderInput("cases_range", "Casos activos totales:",
-                           min = 100, max = 550000000,
+                           min = 100, max = 600000000,
                            value = 0, width = '100%'),
                tags$style(type = "text/css", "#my_map {height: calc(100vh - 100px) !important;}"),
                leafletOutput(outputId = "my_map")
